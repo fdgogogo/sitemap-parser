@@ -7,6 +7,7 @@ import concurrent
 import requests
 from concurrent.futures import Executor, ThreadPoolExecutor
 import uuid
+
 longest = 0
 
 
@@ -32,12 +33,12 @@ def parse(url):
         if len(output_url) > 40:
             output_url = output_url[:20] + '...' + output_url[-20:]
 
-    print('%s\tParsing %s' % (uid, output_url))
     s = time.time()
     r = requests.get(url)
-    te = (time.time() - s) * 1000
+    te = time.time() - s
 
-    print('%s\t%s\t%s\t%s' % (uid, r.status_code, len(r.content), te))
+    print('%s\tParsed %s' % (uid, output_url))
+    print('%s\t%s\t%s\t%sms' % (uid, r.status_code, len(r.content), te))
 
 
 if __name__ == '__main__':
@@ -59,6 +60,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     urls = [url for url in get_urls(args.sitemaps)]
+
+    print('Parsing start')
+    start = time.time()
     print('Url count: %s' % len(urls))
 
     with concurrent.futures.ThreadPoolExecutor(
@@ -67,11 +71,15 @@ if __name__ == '__main__':
                          urls}
         for future in concurrent.futures.as_completed(future_to_url):
             _url = future_to_url[future]
-            try:
-                data = future.result()
-            except Exception as exc:
-                print('%r generated an exception: %s' % (_url, exc))
-            else:
-                print('%r page is %d bytes' % (_url, len(data)))
 
-    print('')
+    count = len(urls)
+    time_e = time.time() - start
+    avg = time_e % len(urls)
+    print('------------------------------------------')
+    print('Done')
+    print('Count: %(count)s, total time: %(time_e)s, '
+          'average_time: %(avg)s' % {
+            'count': count,
+            'time_e': time_e,
+            'avg': avg
+          })
