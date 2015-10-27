@@ -33,12 +33,11 @@ def parse(url):
         if len(output_url) > 40:
             output_url = output_url[:20] + '...' + output_url[-20:]
 
-    s = time.time()
     r = requests.get(url)
-    te = time.time() - s
 
     print('%s\tParsed %s' % (uid, output_url))
-    print('%s\t%s\t%s\t%sms' % (uid, r.status_code, len(r.content), te))
+    print('%s\t%s\t%s\t%.2fms' % (uid, r.status_code, len(r.content),
+                                  r.elapsed.total_seconds() * 1000))
 
 
 if __name__ == '__main__':
@@ -79,7 +78,7 @@ if __name__ == '__main__':
     print('Done')
     print('Count: %(count)s, total time: %(time_e)s, '
           'average_time: %(avg)s' % {
-            'count': count,
-            'time_e': time_e,
-            'avg': avg
+              'count': count,
+              'time_e': time_e,
+              'avg': avg
           })
