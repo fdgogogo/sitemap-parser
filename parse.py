@@ -1,15 +1,16 @@
 # coding: utf-8
 import time
-
-from bs4 import BeautifulSoup
 import argparse
 import concurrent
+from concurrent.futures import ThreadPoolExecutor
+
+from bs4 import BeautifulSoup
 import requests
-from concurrent.futures import Executor, ThreadPoolExecutor
-import uuid
 
 longest = 0
-
+counter = 0
+total = 0
+longest_url = ''
 
 def get_urls(sitemaps):
     for sitemap in sitemaps:
@@ -23,21 +24,30 @@ def get_urls(sitemaps):
 
 
 def parse(url):
-    uid = str(uuid.uuid4())[:6]
-
     if args.full_url:
         output_url = url[:]
     else:
         output_url = url.replace('http://', '')
         output_url = output_url.replace('https://', '')
-        if len(output_url) > 40:
-            output_url = output_url[:20] + '...' + output_url[-20:]
+        if len(output_url) > 80:
+            output_url = output_url[:40] + '...' + output_url[-40:]
 
     r = requests.get(url)
 
-    print('%s\tParsed %s' % (uid, output_url))
-    print('%s\t%s\t%s\t%.2fms' % (uid, r.status_code, len(r.content),
-                                  r.elapsed.total_seconds() * 1000))
+    global counter, longest, total, longest_url
+
+    counter += 1
+
+    info = '[%5s/%5s]' % (counter, total)
+    elapsed = r.elapsed.total_seconds()
+    if elapsed > longest:
+        longest = elapsed
+        longest_url = url
+
+    print('%s\tParsed %s' % (info, output_url))
+    print('%s\t status: %s\t length: %s\t time: %.2fms' % (
+        info, r.status_code, len(r.content),
+        elapsed * 1000))
 
 
 if __name__ == '__main__':
@@ -56,13 +66,13 @@ if __name__ == '__main__':
                         default=False)
 
     args = parser.parse_args()
-    args = parser.parse_args()
 
     urls = [url for url in get_urls(args.sitemaps)]
 
     print('Parsing start')
     start = time.time()
-    print('Url count: %s' % len(urls))
+    total = len(urls)
+    print('Url count: %s' % total)
 
     with concurrent.futures.ThreadPoolExecutor(
             max_workers=args.workers) as executor:
@@ -71,14 +81,14 @@ if __name__ == '__main__':
         for future in concurrent.futures.as_completed(future_to_url):
             _url = future_to_url[future]
 
-    count = len(urls)
     time_e = time.time() - start
-    avg = time_e % len(urls)
+    avg = time_e % total
+
     print('------------------------------------------')
     print('Done')
     print('Count: %(count)s, total time: %(time_e)s, '
           'average_time: %(avg)s' % {
-              'count': count,
+              'count': total,
               'time_e': time_e,
               'avg': avg
           })
