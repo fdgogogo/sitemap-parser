@@ -12,6 +12,7 @@ counter = 0
 total = 0
 longest_url = ''
 
+
 def get_urls(sitemaps):
     for sitemap in sitemaps:
         print('Parsing: %s' % sitemap)
@@ -82,13 +83,13 @@ if __name__ == '__main__':
             _url = future_to_url[future]
 
     time_e = time.time() - start
-    avg = time_e % total
+    avg = time_e / total
 
     print('------------------------------------------')
     print('Done')
-    print('Count: %(count)s, total time: %(time_e)s, '
-          'average_time: %(avg)s' % {
+    print('Count: %(count)s, total time: %(time_e)ss, '
+          'average_time: %(avg)sms' % {
               'count': total,
               'time_e': time_e,
-              'avg': avg
+              'avg': avg * 1000
           })
