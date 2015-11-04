@@ -3,7 +3,6 @@ import time
 import argparse
 import concurrent
 from concurrent.futures import ThreadPoolExecutor
-
 from bs4 import BeautifulSoup
 import requests
 
@@ -11,6 +10,7 @@ longest = 0
 counter = 0
 total = 0
 longest_url = ''
+time_total = 0
 
 
 def get_urls(sitemaps):
@@ -35,7 +35,7 @@ def parse(url):
 
     r = requests.get(url)
 
-    global counter, longest, total, longest_url
+    global counter, longest, total, longest_url, time_total
 
     counter += 1
 
@@ -44,7 +44,7 @@ def parse(url):
     if elapsed > longest:
         longest = elapsed
         longest_url = url
-
+    time_total += elapsed
     print('%s\tParsed %s' % (info, output_url))
     print('%s\t status: %s\t length: %s\t time: %.2fms' % (
         info, r.status_code, len(r.content),
@@ -82,8 +82,7 @@ if __name__ == '__main__':
         for future in concurrent.futures.as_completed(future_to_url):
             _url = future_to_url[future]
 
-    time_e = time.time() - start
-    avg = time_e / total
+    avg = time_total / total
 
     print('------------------------------------------')
     print('Done')
