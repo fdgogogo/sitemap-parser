@@ -86,9 +86,9 @@ if __name__ == '__main__':
 
     print('------------------------------------------')
     print('Done')
-    print('Count: %(count)s, total time: %(time_e)ss, '
+    print('Count: %(count)s, total time: %(time_total)ss, '
           'average_time: %(avg)sms' % {
               'count': total,
-              'time_e': time_e,
+              'time_total': time_total,
               'avg': avg * 1000
           })
